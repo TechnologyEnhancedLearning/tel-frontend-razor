@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <AssemblyName>TELFrontendRazor</AssemblyName>
+    <Version>1.0.0</Version>
+    <EnableDefaultContentItems>false</EnableDefaultContentItems>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  
+  <ItemGroup>
+    <None Include="Views\Shared\**\*.*" Pack="true" PackagePath="Views\Shared"></None>
+  </ItemGroup>
+
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.11" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor" Version="2.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="6.0.36" />
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.3.0" />
+  </ItemGroup>
+
+  
+  <ItemGroup>
+    <Folder Include="ViewComponents\" />
+    <Folder Include="Views\Shared\Components\" />
+  </ItemGroup>
+
+</Project>
