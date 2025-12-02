@@ -1,0 +1,27 @@
+@using TELFrontendRazor.ViewModels
+@model QuickFiltersViewModel
+
+<nav class="quick-filters">
+    <ul class="quick-filters__list">
+        <span class="quick-filters__list-heading">Show</span>
+        <li class="quick-filters__list-item">
+            <a asp-action="Index" asp-route-dashboardTrayLearningResourceType="all" asp-route-myLearningDashboard=@Model.MyLearningsType asp-route-resourceDashboard="@(Model.ResourcesType)" asp-route-catalogueDashboard="@Model.CataloguesType" asp-fragment="my-learning"
+               class="quick-filters__button @(Model.DashboardTrayLearningResourceType == "all" ? "quick-filters__button--active" : "")"
+               title="All"
+               data-tag="all">
+                All
+            </a>
+        </li>
+        @foreach (var tag in Model.TagNames)
+        {
+            <li class="quick-filters__list-item">
+                <a asp-action="Index" asp-route-dashboardTrayLearningResourceType="@tag" asp-route-myLearningDashboard=@Model.MyLearningsType asp-route-resourceDashboard="@(Model.ResourcesType)" asp-route-catalogueDashboard="@Model.CataloguesType" asp-fragment="my-learning"
+                   class="quick-filters__button @(Model.DashboardTrayLearningResourceType == @tag ? "quick-filters__button--active" : "")"
+                   title="@tag"
+                   data-tag="@tag">
+                    @tag
+                </a>
+            </li>
+        }
+    </ul>
+</nav>
