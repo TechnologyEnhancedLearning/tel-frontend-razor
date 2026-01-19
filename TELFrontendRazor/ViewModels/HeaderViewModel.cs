@@ -5,7 +5,6 @@ namespace TELFrontendRazor.ViewModels
 {
     public class HeaderViewModel
     {
-        // --- EXISTING CONSTRUCTOR ---
         public HeaderViewModel(
             Organisation organisationDetails,
             bool? isService,
@@ -42,39 +41,56 @@ namespace TELFrontendRazor.ViewModels
             SearchLink = searchLink;
         }
 
-        // --- EXISTING PROPERTIES ---
         public Organisation OrganisationDetails { get; set; }
+
         public bool? IsService { get; set; }
+
         public AccountLinks? AccountLinks { get; set; }
+
         public Dictionary<string, string> Theme { get; set; }
+
         public string? MobileNavFolder { get; set; }
+
         public string? MobileNavView { get; set; }
+
         public string? NotificationFolder { get; set; }
+
         public string? NotificationNavView { get; set; }
+
         public string? SearchFolder { get; set; }
+
         public string? SearchNavView { get; set; }
+
         public string? SearchControllerName { get; set; }
+
         public string? TopNavFolder { get; set; }
+
         public string? TopNavView { get; set; }
+
         public string? NavigationFolder { get; set; }
+
         public string? NavigationView { get; set; }
+
         public LinkViewModel? SearchLink { get; set; }
 
-        // --- NEW PROPERTIES (REQUIRED FOR THE FIX) ---
         public bool LoginWizardInProcess { get; set; }
+
         public bool SystemOffline { get; set; }
+
         public string SupportFeedbackUrl { get; set; } = "#";
+
         public string CurrentController { get; set; } = "";
+
         public bool IsUserAuthenticated { get; set; }
+
         public bool IsReadOnlyOrBasicUser { get; set; }
 
-        // --- VIEW HELPERS (REPLACES @FUNCTIONS) ---
+        // --- VIEW HELPERS
         public string PreLoginClass => !IsUserAuthenticated ? "nhsuk-header__pre-login" : "";
         public string BasicUserPaddingClass => IsReadOnlyOrBasicUser ? "nhsuk-u-padding-right-4" : "";
         public bool HideSearchBar => !IsUserAuthenticated || CurrentController == "mylearning";
     }
 
-    // --- SUPPORTING CLASSES (Keep existing) ---
     public static class HeaderTheme
     {
         public static Dictionary<string, string> BLUE = new Dictionary<string, string> { { "header", "nhsuk-header" }, { "navigation", "nhsuk-header__navigation" } };
