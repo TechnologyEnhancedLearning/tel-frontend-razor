@@ -1,5 +1,5 @@
 ﻿// To be uncommented and placed in WebUI/Services/
-@*
+/*
 
  namespace LearningHub.Nhs.WebUI.Services
 {
@@ -82,4 +82,4 @@
     }
 }
  
- *@
+ */
