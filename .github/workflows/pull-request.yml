@@ -1,173 +1,75 @@
-name: Publish NuGet Package
+name: Continuous Integration
 
-on:
-  pull_request:
-    types: [closed]
+on: push
+  
 jobs:
-  versioning:
-    name: Fetch and increment version
+  build:
+    name: Build and publish package
     if: github.event.pull_request.merged == true
-    runs-on: ubuntu-latest
-    outputs:
-      new_version: ${{ steps.set_version.outputs.version }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      #################################################
-      # Fetch latest NuGet package version from GitHub Packages
-      #################################################
-      - name: Fetch latest NuGet version from GitHub Packages
-        id: latest_nuget_version
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OWNER: ${{ github.repository_owner }}
-          NUGET_PACKAGE: "TELFrontendRazor"
-        run: |
-          echo "Fetching latest NuGet version for package '$NUGET_PACKAGE' in owner '$OWNER'"
-          
-          API_URL="https://api.github.com/users/$OWNER/packages/nuget/$NUGET_PACKAGE/versions"
+    runs-on: ubuntu-24.04
 
-          ### fetch GitHub Packages
-          VERSIONS_JSON=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
-            -H "Accept: application/vnd.github.v3+json" \
-            "$API_URL")
-
-          ### extract latest nuget pkg version
-          LATEST_VERSION=$(echo "$VERSIONS_JSON" | jq -r '.[0].name // "0.0.0"')
-
-          echo "Latest NuGet package version found: $LATEST_VERSION"
-          echo "version=$LATEST_VERSION" >> $GITHUB_OUTPUT
-
-      - name: Echo latest NuGet version
-        run: echo "Current version:${{ steps.latest_nuget_version.outputs.version }}"
-
-      #################################################
-      # Decide increment type: patch, minor, major
-      #################################################
-      - name: Set increment type based on branch and labels
-        id: increment_type
-        run: |
-          BRANCH_REF="${{ github.head_ref }}"
-          MERGE_MESSAGE="${{ github.event.pull_request.title }} ${{ github.event.pull_request.body }}"
-          LABELS="${{ join(github.event.pull_request.labels.*.name, ',') }}"
-          TYPE="patch"
-
-          echo "Branch: $BRANCH_REF"
-          echo "Merge message: $MERGE_MESSAGE"
-          echo "Labels: $LABELS"
-
-          if [[ "$BRANCH_REF" == major/* ]] || [[ "$LABELS" == *"Major"* ]] || [[ "$MERGE_MESSAGE" =~  (?i)MAJOR[[:space:]]CHANGE ]] || [[ "$MERGE_MESSAGE" =~ (?i)BREAKING[[:space:]]CHANGE ]]; then
-            TYPE="major"
-          elif [[ "$BRANCH_REF" == feature/* ]]; then
-            TYPE="minor"
-          elif [[ "$BRANCH_REF" == fix/* ]]; then
-            TYPE="patch"
-          fi
-
-          # Major version bump triggered by new major tag is skipped here
-          # because version baseline is fetched from Packages.
-
-          echo "Will increment: $TYPE"
-          echo "TYPE=$TYPE" >> $GITHUB_OUTPUT
-
-      #################################################
-      # Increment semantic version
-      #################################################
-      - name: Increment package version
-        id: bump_version
-        uses: christian-draeger/increment-semantic-version@1.2.3
-        with:
-          current-version: ${{ steps.latest_nuget_version.outputs.version }}
-          version-fragment: ${{ steps.increment_type.outputs.TYPE }}
-
-      - name: Echo new version
-        run: echo "Next version:${{ steps.bump_version.outputs.next-version }}"
-
-      #################################################
-      # Set new version as job output for downstream jobs
-      #################################################
-      - name: Set version output for job
-        id: set_version
-        run: echo "version=${{ steps.bump_version.outputs.next-version }}" >> $GITHUB_OUTPUT
-          
-
-  nuget_publish:
-    name: Build, Pack, and Publish NuGet Package
-    if: github.event.pull_request.merged == true
-    runs-on: ubuntu-latest
-    needs: versioning
     permissions:
-      contents: write
       packages: write
+      contents: write
+
     env:
-      BUILD_CONFIG: "Release"
-      PROJECT_PATH: "TELFrontendRazor/TELFrontendRazor.csproj"
-      GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      BUILD_CONFIG: Release
+      SOLUTION: TELFrontendRazor.sln
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_OWNER: ${{ github.repository_owner }}
+      AZURE_OWNER: ${{ secrets.TEL_AZURE_DEVOPS_USERNAME }}
+      AZURE_PATH: ${{ secrets.AZURE_PACKAGES_PATH }}
+      AZURE_KEY: ${{ secrets.AZURE_DEVOPS_PAT }}
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'   # Specify your target .NET version
+          dotnet-version: '8.0.x'
 
       - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@v4.0.1
+        uses: gittools/actions/gitversion/setup@v3.1.2
         with:
-          versionSpec: '6.3.0'
+          versionSpec: '6.0.x'
 
       - name: Determine Version
         id: gitversion
-        uses: gittools/actions/gitversion/execute@v4.0.1
+        uses: gittools/actions/gitversion/execute@v3.1.2
 
-      - name: Display versioning outputs
+      - name: Display GitVersion outputs
         run: |
-          echo "NuGet Version: ${{ steps.gitversion.outputs.nuGetVersionV2 }}"
-          echo "SemVer: ${{ steps.gitversion.outputs.semVer }}"
-          echo "Outputs: ${{ toJson(steps.gitversion.outputs) }}"
+          echo "Version will be set to: ${{ steps.gitversion.outputs.majorMinorPatch }}"
 
-      - name: Use version in another step
-        run: |
-          VERSION="${{ steps.gitversion.outputs.major }}.${{ steps.gitversion.outputs.minor }}.${{ steps.gitversion.outputs.patch }}"
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
+      - name: Add Azure artifact
+        run: dotnet nuget add source "$AZURE_PATH" --name 'LearningHubFeed'  --username "$AZURE_OWNER" --password "$AZURE_KEY" --store-password-in-clear-text
 
-      - name: Set version env
-        run: |
-          echo "Using version from versioning job: ${{ needs.versioning.outputs.new_version }}"
-          echo "NEXT_VERSION=${{ needs.versioning.outputs.new_version }}" >> $GITHUB_ENV
+      - name: Add github registry
+        run: dotnet nuget add source --username "${{ github.actor }}" --password "$GITHUB_TOKEN" --store-password-in-clear-text --name github "https://nuget.pkg.github.com/$GITHUB_OWNER/index.json"
 
-      - name: Restore NuGet packages
-        run: dotnet restore $PROJECT_PATH
+      - name: Dotnet build
+        run:  dotnet build "$SOLUTION" --configuration release
 
-      - name: Build project
-        run: dotnet build $PROJECT_PATH --configuration $BUILD_CONFIG --no-restore
+      - name: Package nuget
+        run: dotnet pack "$SOLUTION" --configuration "$BUILD_CONFIG" -o package /p:PackageVersion=${{ steps.gitversion.outputs.majorMinorPatch }}
 
-      - name: Pack NuGet package
-        run: dotnet pack $PROJECT_PATH --configuration $BUILD_CONFIG --no-build -o out /p:PackageVersion=$NEXT_VERSION
+      - name: Push generated package to GitHub registry
+        run: dotnet nuget push ./package/*.nupkg --api-key "$GITHUB_TOKEN" --source "github" --skip-duplicate
 
-      - name: Add GitHub NuGet source
-        run: dotnet nuget add source --username ${{ github.actor }} --password $GITHUB_TOKEN --store-password-in-clear-text --name github "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+      - name: Push generated package to Azure Feed
+        run: dotnet nuget push ./package/*.nupkg  --source "$AZURE_PATH"   --api-key "$AZURE_KEY"  --skip-duplicate
 
-      - name: Publish NuGet package to GitHub Packages
-        run: dotnet nuget push out/*.nupkg --api-key $GITHUB_TOKEN --source "github" --skip-duplicate
-
-      #################################################
-      # Publish release
-      #################################################
-
-      - name: Create Release
-        id: create_release
-        uses: softprops/action-gh-release@v2.3.2
+      - name: Tag published version
+        uses: actions/github-script@v7
         with:
-          tag_name: v${{ needs.versioning.outputs.new_version }}
-          release_name: Release v${{ needs.versioning.outputs.new_version }}
-          files: ./package/*.nupkg
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'refs/tags/v${{ steps.gitversion.outputs.majorMinorPatch }}',
+              sha: context.sha
+            })
