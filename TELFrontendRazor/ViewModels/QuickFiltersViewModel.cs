@@ -1,41 +1,19 @@
 ﻿namespace TELFrontendRazor.ViewModels
 {
+    using NHSUKFrontendRazor.ViewModels;
+
     public class QuickFiltersViewModel
     {
-        public QuickFiltersViewModel(
-            List<string> tagNames,
-            string myLearningsType,
-            string resourcesType,
-            string cataloguesType,
-            string dashboardTrayLearningResourceType)
-        {
-            TagNames = tagNames;
-            MyLearningsType = myLearningsType;
-            ResourcesType = resourcesType;
-            CataloguesType = cataloguesType;
-            DashboardTrayLearningResourceType = dashboardTrayLearningResourceType;
-        }
+        public string? FilterTitle { get; set; }
 
-        public List<string> TagNames { get; set; }
+        public string? Heading { get; set; }
 
-        /// <summary>
-        /// Gets or sets a type of my learning items to be displayed in the dashboard.
-        /// </summary>
-        public string MyLearningsType { get; set; }
+        public bool ShowDefaultTag { get; set; }
 
-        /// <summary>
-        /// Gets or sets a type of resources to be displayed in the dashboard.
-        /// </summary>
-        public string ResourcesType { get; set; }
+        public LinkViewModel? DefaultTag { get; set; }
 
-        /// <summary>
-        /// Gets or sets a type of catalogues to be displayed in the dashboard.
-        /// </summary
-        public string CataloguesType { get; set; }
+        public List<LinkViewModel> Tags { get; set; }
 
-        /// <summary>
-        /// Gets or sets the dashboard tray Learning resource type.
-        /// </summary>
-        public string DashboardTrayLearningResourceType { get; set; }
+        public List<string> ActiveTags { get; set; }
     }
 }

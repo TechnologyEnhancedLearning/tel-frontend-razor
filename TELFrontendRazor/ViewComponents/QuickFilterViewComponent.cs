@@ -1,6 +1,7 @@
 ﻿namespace TELFrontendRazor.ViewComponents
 {
     using Microsoft.AspNetCore.Mvc;
+    using NHSUKFrontendRazor.ViewModels;
     using TELFrontendRazor.ViewModels;
 
     /// <summary>
@@ -9,20 +10,25 @@
     public class QuickFiltersViewComponent : ViewComponent
     {
         public IViewComponentResult Invoke(
-            List<string> tagNames,
-            string myLearningsType,
-            string resourcesType,
-            string cataloguesType,
-            string dashboardTrayLearningResourceType)
+            string? filterTitle = null,
+            string? heading = null,
+            LinkViewModel? defaultTag = null,
+            List<LinkViewModel>? tags = null,
+            List<string>? activeTags = null,
+            bool showDefaultTag = true)
         {
+            defaultTag ??= new LinkViewModel("All", "#");
+
             var model = new QuickFiltersViewModel
-            (
-                tagNames,
-                myLearningsType,
-                resourcesType,
-                cataloguesType,
-                dashboardTrayLearningResourceType
-            );
+            {
+                FilterTitle = filterTitle,
+                Heading = heading,
+                ShowDefaultTag = showDefaultTag,
+                DefaultTag = defaultTag,
+                Tags = tags,
+                ActiveTags = activeTags
+            };
+
             return View(model);
         }
     }
