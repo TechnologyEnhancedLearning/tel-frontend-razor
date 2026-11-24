@@ -2,9 +2,9 @@
     <Target Name="CopyFiles" BeforeTargets="Build">
         <ItemGroup>
             <File Include="$(MSBuildThisFileDirectory)..\Views\Shared\**\*.*" />
-			<CssFiles Include="$(MSBuildThisFileDirectory)..\wwwroot\css\shared\components\**\*.*" />
+            <WwwrootFiles Include="$(MSBuildThisFileDirectory)..\wwwroot\**\*.*" />
         </ItemGroup>
-		<Copy SourceFiles="@(File)" DestinationFolder="$(ProjectDir)Views\Shared\%(RecursiveDir)" SkipUnchangedFiles="true" />
-        <Copy SourceFiles="@(CssFiles)" DestinationFolder="$(ProjectDir)wwwroot\css\shared\components\%(RecursiveDir)" SkipUnchangedFiles="true" />
+        <Copy SourceFiles="@(File)" DestinationFolder="$(ProjectDir)Views\Shared\%(RecursiveDir)" SkipUnchangedFiles="true" />
+        <Copy SourceFiles="@(WwwrootFiles)" DestinationFolder="$(ProjectDir)wwwroot\%(RecursiveDir)" SkipUnchangedFiles="true" />
     </Target>
 </Project>

@@ -1,0 +1,20 @@
+{
+  "name": "frontend-resources",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "bundle:js": "esbuild node_modules/tel-frontend/dist/tel-frontend/all.js --bundle --minify --format=esm --sourcemap --outfile=../wwwroot/js/tel-frontend.min.js",
+    "build": "npm run bundle:js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "nhsuk-frontend": "^10.6.1",
+    "tel-frontend": "^0.1.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
+}
