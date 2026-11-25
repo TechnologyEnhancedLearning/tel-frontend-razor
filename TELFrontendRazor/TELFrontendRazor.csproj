@@ -20,11 +20,25 @@
     <EmbeddedResource Remove="**\TEST__*" />
   </ItemGroup>
 
+  <ItemGroup>
+    <TelCssFiles Include="frontend-resources\node_modules\tel-frontend\dist\main-0.1.0.min.css" />
+    <TelCssMap   Include="frontend-resources\node_modules\tel-frontend\dist\main.css.map" />
+    <NhsCssFiles Include="frontend-resources\node_modules\nhsuk-frontend\dist\nhsuk\nhsuk-frontend.min.css*" />
+    <NhsJsFiles  Include="frontend-resources\node_modules\nhsuk-frontend\dist\nhsuk\nhsuk-frontend.min.js*" />
+  </ItemGroup>
+
+  <Target Name="CopyAssetsToWwwroot" BeforeTargets="BeforeBuild" Condition="Exists('frontend-resources\node_modules')">
+    <Copy SourceFiles="@(TelCssFiles)" DestinationFiles="wwwroot\css\tel-frontend.min.css" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(TelCssMap)"   DestinationFiles="wwwroot\css\tel-frontend.min.css.map" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(NhsCssFiles)" DestinationFolder="wwwroot\css" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(NhsJsFiles)"  DestinationFolder="wwwroot\js"  SkipUnchangedFiles="true" />
+    <Exec Command="npm run bundle:js"
+          WorkingDirectory="frontend-resources" />
+  </Target>
+
   
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.11" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.3.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="6.0.36" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.3.0" />
     <PackageReference Include="NHSUKFrontendRazor" Version="1.0.0" />
